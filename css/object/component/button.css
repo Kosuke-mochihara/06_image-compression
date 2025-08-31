@@ -1,0 +1,120 @@
+/* button.css - BEM methodology */
+.c-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: none;
+  border-radius: var(--border-radius-md);
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  position: relative;
+  overflow: hidden;
+  min-height: 44px;
+}
+
+.c-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.c-button--primary {
+  background-color: var(--primary-color);
+  color: var(--white-color);
+}
+
+.c-button--primary:hover:not(:disabled) {
+  background-color: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.c-button--secondary {
+  background-color: var(--white-color);
+  color: var(--primary-color);
+  border: 2px solid var(--primary-color);
+}
+
+.c-button--secondary:hover:not(:disabled) {
+  background-color: var(--primary-color);
+  color: var(--white-color);
+}
+
+.c-button--success {
+  background-color: var(--success-color);
+  color: var(--white-color);
+}
+
+.c-button--success:hover:not(:disabled) {
+  background-color: #218838;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.c-button--danger {
+  background-color: var(--danger-color);
+  color: var(--white-color);
+}
+
+.c-button--danger:hover:not(:disabled) {
+  background-color: #c82333;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.c-button--large {
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-size: var(--font-size-lg);
+  min-height: 52px;
+}
+
+.c-button--small {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  min-height: 36px;
+}
+
+.c-button--full-width {
+  width: 100%;
+}
+
+.c-button__icon {
+  margin-right: var(--spacing-xs);
+  display: inline-flex;
+  align-items: center;
+}
+
+.c-button__icon--right {
+  margin-right: 0;
+  margin-left: var(--spacing-xs);
+}
+
+.c-button--loading {
+  pointer-events: none;
+}
+
+.c-button--loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: c-button-spin 1s linear infinite;
+}
+
+@keyframes c-button-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.c-button--loading .c-button__text {
+  opacity: 0;
+}

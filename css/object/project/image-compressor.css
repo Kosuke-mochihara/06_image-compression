@@ -1,0 +1,198 @@
+/* image-compressor.css - Project specific styles */
+.p-image-compressor {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.p-image-compressor__options {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+  padding: var(--spacing-lg);
+  background-color: var(--white-color);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.p-image-compressor__option-group {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.p-image-compressor__option-label {
+  font-weight: 500;
+  color: var(--dark-color);
+  margin-bottom: var(--spacing-xs);
+  display: block;
+}
+
+.p-image-compressor__radio-group {
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.p-image-compressor__radio-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.p-image-compressor__radio {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary-color);
+}
+
+.p-image-compressor__radio-label {
+  font-size: var(--font-size-base);
+  color: var(--dark-color);
+  cursor: pointer;
+}
+
+.p-image-compressor__results {
+  margin-top: var(--spacing-xl);
+}
+
+.p-image-compressor__result-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+  background-color: var(--white-color);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
+  border-left: 4px solid var(--success-color);
+}
+
+.p-image-compressor__result-item--error {
+  border-left-color: var(--danger-color);
+}
+
+.p-image-compressor__result-info {
+  flex: 1;
+}
+
+.p-image-compressor__result-name {
+  font-weight: 600;
+  color: var(--dark-color);
+  margin-bottom: var(--spacing-xs);
+}
+
+.p-image-compressor__result-stats {
+  display: flex;
+  gap: var(--spacing-md);
+  font-size: var(--font-size-sm);
+  color: var(--secondary-color);
+}
+
+.p-image-compressor__result-stat {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.p-image-compressor__compression-ratio {
+  font-weight: 600;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-sm);
+}
+
+.p-image-compressor__compression-ratio--excellent {
+  background-color: rgba(40, 167, 69, 0.1);
+  color: var(--success-color);
+}
+
+.p-image-compressor__compression-ratio--good {
+  background-color: rgba(23, 162, 184, 0.1);
+  color: var(--info-color);
+}
+
+.p-image-compressor__compression-ratio--fair {
+  background-color: rgba(255, 193, 7, 0.1);
+  color: var(--warning-color);
+}
+
+.p-image-compressor__download-section {
+  margin-top: var(--spacing-xl);
+  text-align: center;
+  padding: var(--spacing-lg);
+  background-color: var(--white-color);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.p-image-compressor__download-title {
+  margin-bottom: var(--spacing-md);
+  color: var(--dark-color);
+}
+
+.p-image-compressor__download-summary {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-xl);
+  margin-bottom: var(--spacing-lg);
+  font-size: var(--font-size-sm);
+  color: var(--secondary-color);
+}
+
+.p-image-compressor__download-stat {
+  text-align: center;
+}
+
+.p-image-compressor__download-stat-value {
+  display: block;
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--dark-color);
+  margin-bottom: var(--spacing-xs);
+}
+
+.p-image-compressor__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xl);
+  color: var(--secondary-color);
+}
+
+.p-image-compressor__loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e0e0e0;
+  border-top: 2px solid var(--primary-color);
+  border-radius: 50%;
+  animation: p-image-compressor-spin 1s linear infinite;
+}
+
+@keyframes p-image-compressor-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+  .p-image-compressor__options {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+  }
+  
+  .p-image-compressor__result-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+  
+  .p-image-compressor__result-stats {
+    flex-wrap: wrap;
+  }
+  
+  .p-image-compressor__download-summary {
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+}

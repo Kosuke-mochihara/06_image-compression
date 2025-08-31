@@ -1,0 +1,60 @@
+/* card.css - BEM methodology */
+.c-card {
+  background-color: var(--white-color);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: box-shadow var(--transition-base);
+}
+
+.c-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.c-card__header {
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid #e0e0e0;
+  background-color: var(--light-color);
+}
+
+.c-card__title {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--dark-color);
+}
+
+.c-card__body {
+  padding: var(--spacing-lg);
+}
+
+.c-card__footer {
+  padding: var(--spacing-lg);
+  border-top: 1px solid #e0e0e0;
+  background-color: var(--light-color);
+}
+
+.c-card--compact .c-card__header,
+.c-card--compact .c-card__body,
+.c-card--compact .c-card__footer {
+  padding: var(--spacing-md);
+}
+
+.c-card--borderless {
+  box-shadow: none;
+  border: 1px solid #e0e0e0;
+}
+
+@media (max-width: 768px) {
+  .c-card__header,
+  .c-card__body,
+  .c-card__footer {
+    padding: var(--spacing-md);
+  }
+  
+  .c-card--compact .c-card__header,
+  .c-card--compact .c-card__body,
+  .c-card--compact .c-card__footer {
+    padding: var(--spacing-sm);
+  }
+}

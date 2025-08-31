@@ -1,0 +1,17 @@
+/* display.css - Utility classes */
+.u-display-block { display: block !important; }
+.u-display-inline { display: inline !important; }
+.u-display-inline-block { display: inline-block !important; }
+.u-display-flex { display: flex !important; }
+.u-display-inline-flex { display: inline-flex !important; }
+.u-display-grid { display: grid !important; }
+.u-display-none { display: none !important; }
+
+.u-visibility-visible { visibility: visible !important; }
+.u-visibility-hidden { visibility: hidden !important; }
+
+.u-opacity-0 { opacity: 0 !important; }
+.u-opacity-25 { opacity: 0.25 !important; }
+.u-opacity-50 { opacity: 0.5 !important; }
+.u-opacity-75 { opacity: 0.75 !important; }
+.u-opacity-100 { opacity: 1 !important; }

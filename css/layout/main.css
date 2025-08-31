@@ -1,0 +1,21 @@
+/* main.css */
+.l-main {
+  min-height: calc(100vh - 120px);
+  padding: var(--spacing-xl) 0;
+}
+
+.l-main__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-lg);
+}
+
+@media (max-width: 768px) {
+  .l-main {
+    padding: var(--spacing-lg) 0;
+  }
+  
+  .l-main__inner {
+    padding: 0 var(--spacing-md);
+  }
+}

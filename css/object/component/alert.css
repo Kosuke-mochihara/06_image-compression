@@ -1,0 +1,94 @@
+/* alert.css - BEM methodology */
+.c-alert {
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius-md);
+  margin-bottom: var(--spacing-md);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+}
+
+.c-alert__icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+}
+
+.c-alert__content {
+  flex: 1;
+}
+
+.c-alert__title {
+  font-weight: 600;
+  margin: 0 0 var(--spacing-xs) 0;
+  font-size: var(--font-size-base);
+}
+
+.c-alert__message {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.c-alert--success {
+  background-color: rgba(40, 167, 69, 0.1);
+  border: 1px solid rgba(40, 167, 69, 0.3);
+  color: #155724;
+}
+
+.c-alert--success .c-alert__icon {
+  color: var(--success-color);
+}
+
+.c-alert--error {
+  background-color: rgba(220, 53, 69, 0.1);
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  color: #721c24;
+}
+
+.c-alert--error .c-alert__icon {
+  color: var(--danger-color);
+}
+
+.c-alert--warning {
+  background-color: rgba(255, 193, 7, 0.1);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  color: #856404;
+}
+
+.c-alert--warning .c-alert__icon {
+  color: var(--warning-color);
+}
+
+.c-alert--info {
+  background-color: rgba(23, 162, 184, 0.1);
+  border: 1px solid rgba(23, 162, 184, 0.3);
+  color: #0c5460;
+}
+
+.c-alert--info .c-alert__icon {
+  color: var(--info-color);
+}
+
+.c-alert--dismissible {
+  position: relative;
+  padding-right: var(--spacing-xl);
+}
+
+.c-alert__close {
+  position: absolute;
+  top: var(--spacing-sm);
+  right: var(--spacing-sm);
+  background: none;
+  border: none;
+  font-size: var(--font-size-lg);
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  line-height: 1;
+  opacity: 0.7;
+  transition: opacity var(--transition-fast);
+}
+
+.c-alert__close:hover {
+  opacity: 1;
+}

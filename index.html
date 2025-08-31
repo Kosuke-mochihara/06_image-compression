@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="高品質な画像圧縮ツール - ブラウザで簡単に画像を圧縮">
+    <title>画像圧縮ツール</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="l-header">
+        <div class="l-header__inner">
+            <h1 class="l-header__title">画像圧縮ツール</h1>
+        </div>
+    </header>
+
+    <main class="l-main">
+        <div class="l-main__inner">
+            <div class="p-image-compressor">
+                <!-- Alert area for messages -->
+                <div id="alertArea" class="u-margin-bottom-lg"></div>
+
+                <!-- Description section -->
+                <div class="c-description">
+                    <h2 class="c-description__title">高品質な画像圧縮ツール</h2>
+                    <p class="c-description__text">ブラウザ上で完結する高品質な画像圧縮。ファイルは外部に送信されません。</p>
+                </div>
+
+                <!-- Drag and drop area - moved to top -->
+                <div class="c-upload-zone" id="dropzone">
+                    <input type="file" id="fileInput" class="c-upload-zone__input" multiple accept="image/*,.heic,.heif" tabindex="-1">
+                    <div class="c-upload-zone__content">
+                        <div class="c-upload-zone__visual">
+                            <div class="c-upload-zone__icon-container">
+                                <svg class="c-upload-zone__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25z"/>
+                                </svg>
+                            </div>
+                            <h2 class="c-upload-zone__title">画像をアップロード</h2>
+                            <p class="c-upload-zone__subtitle">ドラッグ&ドロップまたはクリックして選択</p>
+                            <button type="button" class="c-button c-button--primary" id="selectFilesBtn">
+                                <span class="c-button__text">ファイルを選択</span>
+                            </button>
+                        </div>
+                        <div class="c-upload-zone__formats">
+                            <span class="c-format-tag">JPEG</span>
+                            <span class="c-format-tag">PNG</span>
+                            <span class="c-format-tag">GIF</span>
+                            <span class="c-format-tag">WebP</span>
+                            <span class="c-format-tag">HEIC</span>
+                            <span class="c-format-tag">その他</span>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Loading indicator -->
+                <div id="loadingIndicator" class="c-loading u-display-none">
+                    <div class="c-loading__spinner"></div>
+                    <h3 class="c-loading__title">画像を圧縮中...</h3>
+                    <p class="c-loading__subtitle">しばらくお待ちください</p>
+                </div>
+
+                <!-- Results area -->
+                <div id="resultsArea" class="c-results u-display-none">
+                    <div class="c-results__header">
+                        <h2 class="c-results__title">圧縮完了</h2>
+                        <p class="c-results__subtitle">以下の画像が正常に圧縮されました</p>
+                    </div>
+                    <div class="c-results__list" id="resultsList"></div>
+                </div>
+
+                <!-- Download section -->
+                <div id="downloadSection" class="c-download u-display-none">
+                    <div class="c-download__summary">
+                        <div class="c-stat-grid">
+                            <div class="c-stat">
+                                <div class="c-stat__value" id="totalFiles">0</div>
+                                <div class="c-stat__label">ファイル数</div>
+                            </div>
+                            <div class="c-stat">
+                                <div class="c-stat__value" id="totalOriginalSize">0 MB</div>
+                                <div class="c-stat__label">元のサイズ</div>
+                            </div>
+                            <div class="c-stat">
+                                <div class="c-stat__value" id="totalCompressedSize">0 MB</div>
+                                <div class="c-stat__label">圧縮後</div>
+                            </div>
+                            <div class="c-stat">
+                                <div class="c-stat__value c-stat__value--accent" id="totalCompressionRatio">0%</div>
+                                <div class="c-stat__label">削減率</div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="c-button c-button--primary c-button--large" id="downloadBtn">
+                        <svg class="c-button__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>
+                        </svg>
+                        <span class="c-button__text">ZIPファイルでダウンロード</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="l-footer">
+        <div class="l-footer__inner">
+            <p class="l-footer__text">&copy; 2025 画像圧縮ツール. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/app.js" defer></script>
+</body>
+</html>
