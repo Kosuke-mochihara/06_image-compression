@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="高品質な画像圧縮ツール - ブラウザで簡単に画像を圧縮">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; object-src 'none'; base-uri 'self'; form-action 'none';">
+    <meta name="referrer" content="no-referrer">
     <title>画像圧縮ツール</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -24,6 +26,11 @@
                 <div class="c-description">
                     <h2 class="c-description__title">高品質な画像圧縮ツール</h2>
                     <p class="c-description__text">ブラウザ上で完結する高品質な画像圧縮。ファイルは外部に送信されません。</p>
+                    <div class="c-description__specs">
+                        <span class="c-spec-tag">最大ファイルサイズ: 50MB</span>
+                        <span class="c-spec-tag">同時処理: 最大20ファイル</span>
+                        <span class="c-spec-tag">プライベート処理</span>
+                    </div>
                 </div>
 
                 <!-- Drag and drop area - moved to top -->
@@ -38,9 +45,15 @@
                             </div>
                             <h2 class="c-upload-zone__title">画像をアップロード</h2>
                             <p class="c-upload-zone__subtitle">ドラッグ&ドロップまたはクリックして選択</p>
-                            <button type="button" class="c-button c-button--primary" id="selectFilesBtn">
-                                <span class="c-button__text">ファイルを選択</span>
-                            </button>
+                            <div class="c-upload-zone__buttons">
+                                <button type="button" class="c-button c-button--primary" id="selectFilesBtn">
+                                    <span class="c-button__text">ファイルを選択</span>
+                                </button>
+                                <button type="button" class="c-button c-button--secondary" id="selectFolderBtn">
+                                    <span class="c-button__text">フォルダを選択</span>
+                                </button>
+                            </div>
+                            <input type="file" id="folderInput" class="c-upload-zone__input" webkitdirectory multiple tabindex="-1">
                         </div>
                         <div class="c-upload-zone__formats">
                             <span class="c-format-tag">JPEG</span>
@@ -58,7 +71,16 @@
                 <div id="loadingIndicator" class="c-loading u-display-none">
                     <div class="c-loading__spinner"></div>
                     <h3 class="c-loading__title">画像を圧縮中...</h3>
-                    <p class="c-loading__subtitle">しばらくお待ちください</p>
+                    <p class="c-loading__subtitle" id="loadingSubtitle">しばらくお待ちください</p>
+                    <div class="c-loading__progress">
+                        <div class="c-progress">
+                            <div class="c-progress__bar" id="progressBar" style="width: 0%"></div>
+                        </div>
+                        <div class="c-progress__text">
+                            <span id="progressText">0 / 0</span>
+                            <span id="progressPercent">0%</span>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Results area -->
@@ -105,10 +127,17 @@
 
     <footer class="l-footer">
         <div class="l-footer__inner">
+            <div class="l-footer__legal">
+                <a href="privacy.html" class="l-footer__link">プライバシーポリシー</a>
+                <span class="l-footer__separator">|</span>
+                <a href="terms.html" class="l-footer__link">利用規約</a>
+            </div>
             <p class="l-footer__text">&copy; 2025 画像圧縮ツール. All rights reserved.</p>
         </div>
     </footer>
 
+    <!-- JSZip library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" crossorigin="anonymous" defer></script>
     <script src="js/app.js" defer></script>
 </body>
 </html>

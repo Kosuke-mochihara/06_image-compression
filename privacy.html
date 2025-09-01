@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="画像圧縮ツール プライバシーポリシー">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none';">
+    <meta name="referrer" content="no-referrer">
+    <title>プライバシーポリシー - 画像圧縮ツール</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .c-legal {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: var(--space-8);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(14, 165, 233, 0.1);
+        }
+        .c-legal h1 { 
+            font-size: 2rem;
+            color: var(--gray-900);
+            margin-bottom: var(--space-6);
+            text-align: center;
+        }
+        .c-legal h2 { 
+            font-size: 1.5rem;
+            color: var(--primary-700);
+            margin: var(--space-8) 0 var(--space-4) 0;
+        }
+        .c-legal p, .c-legal li { 
+            line-height: 1.7;
+            color: var(--gray-700);
+            margin-bottom: var(--space-3);
+        }
+        .c-legal ul {
+            padding-left: var(--space-5);
+        }
+        .c-back-link {
+            display: inline-flex;
+            align-items: center;
+            color: var(--primary-600);
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: var(--space-6);
+        }
+        .c-back-link:hover {
+            color: var(--primary-700);
+        }
+    </style>
+</head>
+<body>
+    <header class="l-header">
+        <div class="l-header__inner">
+            <h1 class="l-header__title">画像圧縮ツール</h1>
+        </div>
+    </header>
+
+    <main class="l-main">
+        <div class="l-main__inner">
+            <div class="c-legal">
+                <a href="index.html" class="c-back-link">← ホームに戻る</a>
+                
+                <h1>プライバシーポリシー</h1>
+                
+                <p><strong>最終更新日：2025年1月1日</strong></p>
+                
+                <h2>1. 基本方針</h2>
+                <p>画像圧縮ツール（以下「本サービス」）は、ユーザーのプライバシー保護を最重要課題として取り組んでいます。本サービスは完全にクライアントサイド（ブラウザ内）で動作し、ユーザーの画像データは外部サーバーに送信されることはありません。</p>
+
+                <h2>2. データの収集と処理</h2>
+                
+                <h3>2.1 収集するデータ</h3>
+                <ul>
+                    <li><strong>画像ファイル</strong>: ユーザーが圧縮のためにアップロードした画像ファイル</li>
+                    <li><strong>メタデータ</strong>: 画像に含まれるEXIF情報（撮影日時、カメラ情報、位置情報等）</li>
+                    <li><strong>技術的データ</strong>: ブラウザの種類、画面解像度等（CDN接続時のみ）</li>
+                </ul>
+
+                <h3>2.2 データの処理場所</h3>
+                <p>すべてのデータ処理はユーザーのブラウザ内で実行されます：</p>
+                <ul>
+                    <li>画像の圧縮処理</li>
+                    <li>ファイル形式の変換</li>
+                    <li>ZIPファイルの作成</li>
+                </ul>
+
+                <h2>3. データの保存と共有</h2>
+                
+                <h3>3.1 データの保存</h3>
+                <ul>
+                    <li>画像データはブラウザのメモリ内にのみ一時保存されます</li>
+                    <li>処理完了後、メモリから自動的に削除されます</li>
+                    <li>サーバーやクラウドへのデータ保存は一切行いません</li>
+                </ul>
+
+                <h3>3.2 第三者との共有</h3>
+                <p>本サービスは以下の場合を除き、ユーザーのデータを第三者と共有することはありません：</p>
+                <ul>
+                    <li>法的義務に基づく場合</li>
+                    <li>ユーザーの明示的な同意がある場合</li>
+                </ul>
+
+                <h2>4. 外部サービスの利用</h2>
+                
+                <h3>4.1 CDN（コンテンツ配信ネットワーク）</h3>
+                <p>本サービスは以下のCDNを利用しています：</p>
+                <ul>
+                    <li><strong>Cloudflare</strong>: JSZipライブラリの読み込み</li>
+                    <li><strong>jsDelivr</strong>: heic2anyライブラリの読み込み</li>
+                    <li><strong>Google Fonts</strong>: フォントファイルの読み込み</li>
+                </ul>
+                <p>これらのサービス利用時に、IPアドレス等の技術的情報が記録される場合があります。詳細は各サービスのプライバシーポリシーをご確認ください。</p>
+
+                <h2>5. セキュリティ対策</h2>
+                <ul>
+                    <li><strong>コンテンツセキュリティポリシー（CSP）</strong>: XSS攻撃の防止</li>
+                    <li><strong>サブリソース整合性（SRI）</strong>: 外部ライブラリの改ざん防止</li>
+                    <li><strong>ファイル検証</strong>: 安全でない形式のファイルの除外</li>
+                    <li><strong>メモリ管理</strong>: 処理後の適切なメモリ解放</li>
+                </ul>
+
+                <h2>6. ユーザーの権利</h2>
+                <p>本サービスはデータを保存しないため、以下の権利行使は不要です：</p>
+                <ul>
+                    <li>データの削除要求</li>
+                    <li>データの修正要求</li>
+                    <li>データの移転要求</li>
+                </ul>
+
+                <h2>7. 子どもの利用について</h2>
+                <p>本サービスは13歳未満のお子様を対象としていません。13歳未満のお子様が本サービスを利用する場合は、保護者の監督の下で行ってください。</p>
+
+                <h2>8. ポリシーの変更</h2>
+                <p>本プライバシーポリシーは予告なく変更される場合があります。重要な変更がある場合は、本ページにて告知いたします。</p>
+
+                <h2>9. お問い合わせ</h2>
+                <p>プライバシーポリシーに関するご質問は、GitHubリポジトリのIssuesにてお問い合わせください。</p>
+
+                <h2>10. 準拠法・管轄</h2>
+                <p>本プライバシーポリシーは日本国の法律に準拠し、解釈されるものとします。</p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="l-footer">
+        <div class="l-footer__inner">
+            <div class="l-footer__legal">
+                <a href="privacy.html" class="l-footer__link">プライバシーポリシー</a>
+                <span class="l-footer__separator">|</span>
+                <a href="terms.html" class="l-footer__link">利用規約</a>
+            </div>
+            <p class="l-footer__text">&copy; 2025 画像圧縮ツール. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

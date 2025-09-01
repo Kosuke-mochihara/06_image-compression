@@ -16,10 +16,12 @@ class ImageCompressor {
     bindEvents() {
         const dropzone = document.getElementById('dropzone');
         const fileInput = document.getElementById('fileInput');
+        const folderInput = document.getElementById('folderInput');
         const selectFilesBtn = document.getElementById('selectFilesBtn');
+        const selectFolderBtn = document.getElementById('selectFolderBtn');
         const downloadBtn = document.getElementById('downloadBtn');
         
-        if (!dropzone || !fileInput || !selectFilesBtn || !downloadBtn) {
+        if (!dropzone || !fileInput || !folderInput || !selectFilesBtn || !selectFolderBtn || !downloadBtn) {
             throw new Error('Required DOM elements not found');
         }
 
@@ -28,32 +30,27 @@ class ImageCompressor {
         dropzone.addEventListener('dragleave', this.handleDragLeave.bind(this));
         dropzone.addEventListener('drop', this.handleDrop.bind(this));
         dropzone.addEventListener('click', (e) => {
-            if (e.target.id === 'selectFilesBtn' || e.target.closest('#selectFilesBtn')) {
+            if (e.target.id === 'selectFilesBtn' || e.target.closest('#selectFilesBtn') ||
+                e.target.id === 'selectFolderBtn' || e.target.closest('#selectFolderBtn')) {
                 return;
             }
             fileInput.click();
         });
         
-        // Add active class on drag events
-        dropzone.addEventListener('dragenter', (e) => {
-            e.preventDefault();
-            dropzone.classList.add('c-upload-zone--active');
-        });
-        
-        dropzone.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            // Only remove if leaving the dropzone completely
-            const rect = dropzone.getBoundingClientRect();
-            if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) {
-                dropzone.classList.remove('c-upload-zone--active');
-            }
-        });
 
         selectFilesBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
             fileInput.click();
         });
+        
+        selectFolderBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            folderInput.click();
+        });
+        
+        folderInput.addEventListener('change', this.handleFolderSelect.bind(this));
 
         fileInput.addEventListener('change', this.handleFileSelect.bind(this));
         downloadBtn.addEventListener('click', this.downloadAsZip.bind(this));
@@ -84,37 +81,70 @@ class ImageCompressor {
         }
     }
 
-    handleDrop(e) {
+    async handleDrop(e) {
         e.preventDefault();
         e.stopPropagation();
         document.getElementById('dropzone').classList.remove('c-upload-zone--active');
         
-        const files = Array.from(e.dataTransfer.files).filter(file => 
-            file.type.startsWith('image/') || 
-            file.name.toLowerCase().endsWith('.heic') ||
-            file.name.toLowerCase().endsWith('.heif')
-        );
+        // DataTransferItemsを使ってフォルダーを再帰的に処理
+        const files = [];
+        if (e.dataTransfer.items) {
+            await this.traverseDataTransferItems(e.dataTransfer.items, files);
+        } else {
+            // フォールバック: 古いブラウザの場合
+            files.push(...Array.from(e.dataTransfer.files));
+        }
         
-        if (files.length === 0) {
-            this.showAlert('画像ファイルを選択してください。', 'error');
+        const imageFiles = files.filter(file => this.isImageFile(file));
+        
+        if (imageFiles.length === 0) {
+            if (files.length > 0) {
+                this.showAlert(`選択された${files.length}個のファイルの中に画像ファイルが見つかりませんでした。対応形式: JPEG, PNG, GIF, BMP, TIFF, WebP, HEIC`, 'error');
+            } else {
+                this.showAlert('画像ファイルを選択してください。', 'error');
+            }
             return;
         }
 
-        this.processFiles(files);
+        this.showAlert(`${imageFiles.length}個の画像ファイルが見つかりました。`, 'success');
+        this.processFiles(imageFiles);
     }
 
     handleFileSelect(e) {
         const files = Array.from(e.target.files).filter(file => 
-            file.type.startsWith('image/') || 
-            file.name.toLowerCase().endsWith('.heic') ||
-            file.name.toLowerCase().endsWith('.heif')
+            this.isImageFile(file)
         );
         
         if (files.length === 0) {
-            this.showAlert('画像ファイルを選択してください。', 'error');
+            const totalFiles = e.target.files.length;
+            if (totalFiles > 0) {
+                this.showAlert(`選択された${totalFiles}個のファイルの中に画像ファイルが見つかりませんでした。対応形式: JPEG, PNG, GIF, BMP, TIFF, WebP, HEIC`, 'error');
+            } else {
+                this.showAlert('画像ファイルを選択してください。', 'error');
+            }
             return;
         }
         
+        this.processFiles(files);
+        e.target.value = '';
+    }
+
+    handleFolderSelect(e) {
+        const files = Array.from(e.target.files).filter(file => 
+            this.isImageFile(file)
+        );
+        
+        if (files.length === 0) {
+            const totalFiles = e.target.files.length;
+            if (totalFiles > 0) {
+                this.showAlert(`選択された${totalFiles}個のファイルの中に画像ファイルが見つかりませんでした。対応形式: JPEG, PNG, GIF, BMP, TIFF, WebP, HEIC`, 'error');
+            } else {
+                this.showAlert('フォルダ内に画像ファイルが見つかりません。', 'error');
+            }
+            return;
+        }
+        
+        this.showAlert(`${files.length}個の画像ファイルが見つかりました。`, 'success');
         this.processFiles(files);
         e.target.value = '';
     }
@@ -125,22 +155,42 @@ class ImageCompressor {
             return;
         }
 
+        // ファイルサイズ制限チェック (50MB)
+        const maxSize = 50 * 1024 * 1024; // 50MB in bytes
+        const oversizedFiles = files.filter(file => file.size > maxSize);
+        if (oversizedFiles.length > 0) {
+            this.showAlert(`ファイルサイズが大きすぎます。最大50MBまでです。`, 'error');
+            return;
+        }
+
+        // ファイル数制限チェック (20ファイル)
+        if (files.length > 20) {
+            this.showAlert(`一度に処理できるファイル数は最大20ファイルです。`, 'error');
+            return;
+        }
+
         this.showLoading();
         this.clearResults();
         this.processedImages = [];
 
         const outputFormat = 'original'; // Always use original format
 
-        for (const file of files) {
+        // 進捗表示を初期化
+        this.updateProgress(files.length, 0);
+        
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
             try {
                 let processFile = file;
+                
+                // 現在処理中のファイル名を表示
+                this.updateLoadingText(`${file.name} を処理中...`);
                 
                 // HEICファイルの場合は先にJPEGに変換
                 if (this.isHeicFile(file)) {
                     try {
-                        this.showAlert(`${file.name}をJPEGに変換中...`, 'info');
+                        this.updateLoadingText(`${file.name} をJPEGに変換中...`);
                         processFile = await this.convertHeicToJpeg(file);
-                        this.showAlert(`${file.name}の変換が完了しました`, 'success');
                     } catch (heicError) {
                         console.error('HEIC conversion error:', heicError);
                         this.processedImages.push({
@@ -148,12 +198,16 @@ class ImageCompressor {
                             error: true,
                             errorMessage: 'HEICファイルの変換に失敗しました。'
                         });
+                        this.updateProgress(files.length, i + 1);
                         continue;
                     }
                 }
                 
                 const result = await this.compressImage(processFile, outputFormat);
                 this.processedImages.push(result);
+                
+                // 進捗を更新
+                this.updateProgress(files.length, i + 1);
             } catch (error) {
                 console.error('Compression error:', error);
                 this.processedImages.push({
@@ -161,6 +215,8 @@ class ImageCompressor {
                     error: true,
                     errorMessage: '読み取れませんでした。再度お試しください。'
                 });
+                // エラーの場合も進捗を更新
+                this.updateProgress(files.length, i + 1);
             }
         }
 
@@ -175,16 +231,26 @@ class ImageCompressor {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             
-            // 30秒でタイムアウト
+            // セキュリティ: 30秒でタイムアウト（DoS対策）
             const timeout = setTimeout(() => {
                 reject(new Error('画像処理がタイムアウトしました'));
             }, 30000);
 
             img.onload = () => {
                 try {
-                    // 高品質設定: より大きなサイズを許可
-                    const maxWidth = 3840;  // 4K対応
-                    const maxHeight = 2160; // 4K対応
+                    // セキュリティチェック: 画像爆弾攻撃対策
+                    const maxPixels = 50 * 1024 * 1024; // 50MP制限
+                    const totalPixels = img.width * img.height;
+                    
+                    if (totalPixels > maxPixels) {
+                        clearTimeout(timeout);
+                        reject(new Error(`画像の解像度が大きすぎます (${img.width}x${img.height}). 最大50メガピクセルまで対応しています。`));
+                        return;
+                    }
+                    
+                    // 効果的な圧縮のための適切なサイズ制限
+                    const maxWidth = 2560;  // 2.5K程度に制限
+                    const maxHeight = 1440; // QHD程度に制限
                     
                     let { width, height } = this.calculateDimensions(
                         img.width, 
@@ -209,17 +275,27 @@ class ImageCompressor {
                     ctx.drawImage(img, 0, 0, width, height);
 
                     let mimeType = file.type;
-                    let quality = 0.95; // デフォルト高品質
+                    let quality = 0.8; // バランスの取れた品質設定
                     let extension = this.getFileExtension(file.name);
 
                     if (outputFormat === 'webp') {
                         mimeType = 'image/webp';
                         extension = 'webp';
-                        quality = 0.92; // WebPでも高品質
+                        quality = 0.85; // WebP効率的な品質
                     } else if (mimeType === 'image/jpeg' || mimeType === 'image/jpg') {
-                        quality = 0.95; // JPEG最高品質
+                        quality = 0.8; // JPEG適度な圧縮
                     } else if (mimeType === 'image/png') {
-                        quality = 1.0;  // PNG最高品質（ロスレス）
+                        // PNGを軽いJPEGに変換（透過なしの場合）
+                        if (!this.hasTransparency(canvas, ctx)) {
+                            mimeType = 'image/jpeg';
+                            extension = 'jpg';
+                            quality = 0.85;
+                        } else {
+                            // 透過ありの場合はWebPに変換
+                            mimeType = 'image/webp';
+                            extension = 'webp';
+                            quality = 0.9; // 透過PNG→WebPは高品質
+                        }
                     }
 
                     canvas.toBlob((blob) => {
@@ -278,6 +354,25 @@ class ImageCompressor {
         return { width: Math.round(width), height: Math.round(height) };
     }
 
+    hasTransparency(canvas, ctx) {
+        try {
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+            
+            // アルファチャンネルをチェック（4番目の値）
+            for (let i = 3; i < data.length; i += 4) {
+                if (data[i] < 255) {
+                    return true; // 透明または半透明のピクセルが見つかった
+                }
+            }
+            return false; // 完全に不透明
+        } catch (error) {
+            // エラーが発生した場合は透過ありと仮定
+            console.warn('透過判定エラー:', error);
+            return true;
+        }
+    }
+
     generateFileName(originalName, extension) {
         const nameWithoutExt = originalName.replace(/\.[^/.]+$/, '');
         return `${nameWithoutExt}_compressed.${extension}`;
@@ -293,7 +388,7 @@ class ImageCompressor {
         
         resultsList.innerHTML = '';
         
-        this.processedImages.forEach((result, index) => {
+        this.processedImages.forEach((result) => {
             const resultItem = document.createElement('div');
             
             if (result.error) {
@@ -368,39 +463,66 @@ class ImageCompressor {
         const downloadBtn = document.getElementById('downloadBtn');
         const originalText = downloadBtn.querySelector('.c-button__text').textContent;
         
+        console.log('Download button clicked');
         downloadBtn.classList.add('c-button--loading');
         downloadBtn.disabled = true;
         downloadBtn.querySelector('.c-button__text').textContent = '準備中...';
 
         try {
+            console.log('Loading JSZip...');
             const JSZip = await this.loadJSZip();
+            console.log('JSZip loaded, creating zip instance');
             const zip = new JSZip();
 
             const successfulImages = this.processedImages.filter(img => !img.error);
+            console.log(`Adding ${successfulImages.length} files to zip`);
+
+            if (successfulImages.length === 0) {
+                throw new Error('圧縮済みファイルがありません');
+            }
 
             // 圧縮済み画像のみを追加
-            successfulImages.forEach((result) => {
+            successfulImages.forEach((result, index) => {
+                console.log(`Adding file ${index + 1}: ${result.fileName}`);
                 zip.file(result.fileName, result.compressedBlob);
             });
 
-            const content = await zip.generateAsync({ type: 'blob' });
+            downloadBtn.querySelector('.c-button__text').textContent = 'ZIP作成中...';
+            console.log('Generating ZIP file...');
+            const content = await zip.generateAsync({ 
+                type: 'blob',
+                compression: 'DEFLATE',
+                compressionOptions: { level: 6 }
+            });
+            
+            console.log('ZIP file generated, size:', content.size);
             
             const now = new Date();
             const timestamp = now.toISOString().slice(0, 19).replace(/[-:T]/g, '').slice(0, 14);
             const filename = `compressed_images_${timestamp}.zip`;
 
+            downloadBtn.querySelector('.c-button__text').textContent = 'ダウンロード開始...';
+            
             const link = document.createElement('a');
             link.href = URL.createObjectURL(content);
             link.download = filename;
+            link.style.display = 'none';
+            
             document.body.appendChild(link);
+            console.log('Triggering download...');
             link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(link.href);
+            
+            // クリーンアップを少し遅らせる
+            setTimeout(() => {
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+            }, 100);
 
             this.showAlert(`${successfulImages.length}個のファイルをダウンロードしました`, 'success');
+            console.log('Download completed successfully');
         } catch (error) {
             console.error('ZIP creation error:', error);
-            this.showAlert('ZIPファイルの作成に失敗しました', 'error');
+            this.showAlert(`ZIPファイルの作成に失敗しました: ${error.message}`, 'error');
         } finally {
             downloadBtn.classList.remove('c-button--loading');
             downloadBtn.disabled = false;
@@ -410,14 +532,30 @@ class ImageCompressor {
 
     async loadJSZip() {
         if (window.JSZip) {
+            console.log('JSZip already loaded');
             return Promise.resolve(window.JSZip);
         }
 
+        console.log('Loading JSZip library...');
         return new Promise((resolve, reject) => {
             const script = document.createElement('script');
             script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
-            script.onload = () => resolve(window.JSZip);
-            script.onerror = () => reject(new Error('JSZip library could not be loaded'));
+            script.crossOrigin = 'anonymous';
+            
+            script.onload = () => {
+                console.log('JSZip loaded successfully');
+                if (window.JSZip) {
+                    resolve(window.JSZip);
+                } else {
+                    reject(new Error('JSZip is not available after loading'));
+                }
+            };
+            
+            script.onerror = (error) => {
+                console.error('JSZip loading error:', error);
+                reject(new Error('JSZip library could not be loaded'));
+            };
+            
             document.head.appendChild(script);
         });
     }
@@ -431,8 +569,10 @@ class ImageCompressor {
         return new Promise((resolve, reject) => {
             const script = document.createElement('script');
             script.src = 'https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js';
+            script.integrity = 'sha512-BL4Xt7adXF1MkW3hx5PFgQfVUaLBWgkK3qpwQ0hsAmJi0VW3kV8mY9/8kU+uj4PNk+XZoLU2C5JPE7bBOm9VFQ==';
+            script.crossOrigin = 'anonymous';
             script.onload = () => resolve(window.heic2any);
-            script.onerror = () => reject(new Error('heic2any library could not be loaded'));
+            script.onerror = () => reject(new Error('heic2any library could not be loaded or integrity check failed'));
             document.head.appendChild(script);
         });
     }
@@ -458,11 +598,101 @@ class ImageCompressor {
         }
     }
 
+    isImageFile(file) {
+        // セキュリティ強化: 安全な画像形式のみ許可
+        const fileName = file.name.toLowerCase();
+        const safeImageExtensions = [
+            '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.tif',
+            '.webp', '.heic', '.heif'
+            // SVG、ICOは XSS リスクのため除外
+        ];
+        
+        const safeMimeTypes = [
+            'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 
+            'image/bmp', 'image/tiff', 'image/webp',
+            'image/heic', 'image/heif'
+            // image/svg+xml は XSS リスクのため除外
+        ];
+        
+        const hasValidExtension = safeImageExtensions.some(ext => fileName.endsWith(ext));
+        const hasValidMimeType = file.type && safeMimeTypes.includes(file.type.toLowerCase());
+        
+        // ファイルサイズの事前チェック（DoS対策）
+        const maxFileSize = 50 * 1024 * 1024; // 50MB
+        if (file.size > maxFileSize) {
+            console.warn(`File ${file.name} exceeds maximum size limit`);
+            return false;
+        }
+        
+        // デバッグ情報をコンソールに出力
+        console.log(`Security Check - File: ${file.name}, Size: ${(file.size/1024/1024).toFixed(2)}MB, Type: "${file.type}", Extension: ${hasValidExtension ? 'OK' : 'NG'}, MIME: ${hasValidMimeType ? 'OK' : 'NG'}`);
+        
+        // より厳格な検証: 拡張子とMIMEタイプの両方が一致する必要
+        return hasValidExtension && (hasValidMimeType || !file.type);
+    }
+
     isHeicFile(file) {
         return file.name.toLowerCase().endsWith('.heic') || 
                file.name.toLowerCase().endsWith('.heif') ||
                file.type === 'image/heic' ||
                file.type === 'image/heif';
+    }
+
+    // DataTransferItemsを使ったフォルダの再帰的な走査
+    async traverseDataTransferItems(items, files) {
+        const promises = [];
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            if (item.webkitGetAsEntry) {
+                const entry = item.webkitGetAsEntry();
+                if (entry) {
+                    promises.push(this.readEntry(entry, files));
+                }
+            } else if (item.getAsFile) {
+                // フォールバック
+                const file = item.getAsFile();
+                if (file) files.push(file);
+            }
+        }
+        await Promise.all(promises);
+    }
+
+    // エントリを再帰的に読み取り
+    async readEntry(entry, files) {
+        if (entry.isFile) {
+            return new Promise((resolve) => {
+                entry.file((file) => {
+                    files.push(file);
+                    resolve();
+                });
+            });
+        } else if (entry.isDirectory) {
+            const reader = entry.createReader();
+            await this.readDirectory(reader, files);
+        }
+    }
+
+    // ディレクトリの内容を再帰的に読み取り
+    async readDirectory(reader, files) {
+        const readBatch = () => {
+            return new Promise((resolve) => {
+                reader.readEntries(async (entries) => {
+                    if (entries.length === 0) {
+                        resolve();
+                        return;
+                    }
+                    
+                    const promises = entries.map(entry => this.readEntry(entry, files));
+                    await Promise.all(promises);
+                    
+                    // 次のバッチを読み取り（ディレクトリが大きい場合のため）
+                    await readBatch();
+                    resolve();
+                });
+            });
+        };
+        
+        await readBatch();
     }
 
     formatFileSize(bytes) {
@@ -507,8 +737,26 @@ class ImageCompressor {
         }, 5000);
     }
 
+    updateProgress(total, completed) {
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const progressPercent = document.getElementById('progressPercent');
+        
+        const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+        
+        if (progressBar) progressBar.style.width = `${percentage}%`;
+        if (progressText) progressText.textContent = `${completed} / ${total}`;
+        if (progressPercent) progressPercent.textContent = `${percentage}%`;
+    }
+    
+    updateLoadingText(text) {
+        const subtitle = document.getElementById('loadingSubtitle');
+        if (subtitle) subtitle.textContent = text;
+    }
+
     showLoading() {
         document.getElementById('loadingIndicator').classList.remove('u-display-none');
+        this.updateLoadingText('しばらくお待ちください');
     }
 
     hideLoading() {
