@@ -231,7 +231,7 @@ const quality = 0.8; // 0.1-1.0の範囲
 
 ## 🎉 制作者
 
-**Modern Image Compressor** with ❤️ by **Jacky**
+**Modern Image Compressor** with by **Kosuke Mochihara**
 
 ### 技術スタック詳細
 - **設計**: FLOCSS + BEM方法論

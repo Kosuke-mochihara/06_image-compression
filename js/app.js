@@ -29,26 +29,50 @@ class ImageCompressor {
         dropzone.addEventListener('dragover', this.handleDragOver.bind(this));
         dropzone.addEventListener('dragleave', this.handleDragLeave.bind(this));
         dropzone.addEventListener('drop', this.handleDrop.bind(this));
+        // ドロップゾーンのクリックイベントをより厳密に制御
         dropzone.addEventListener('click', (e) => {
-            if (e.target.id === 'selectFilesBtn' || e.target.closest('#selectFilesBtn') ||
-                e.target.id === 'selectFolderBtn' || e.target.closest('#selectFolderBtn')) {
+            console.log('Dropzone click event:', e.target);
+            
+            // ボタンまたはその子要素がクリックされた場合は何もしない
+            if (e.target.closest('button') || e.target.closest('.c-button')) {
+                console.log('Button or button child clicked, ignoring');
                 return;
             }
-            fileInput.click();
+            
+            // input要素がクリックされた場合も何もしない
+            if (e.target.tagName === 'INPUT') {
+                console.log('Input clicked, ignoring');
+                return;
+            }
+            
+            // ボタンコンテナ内のクリックは無視
+            if (e.target.closest('.c-upload-zone__buttons')) {
+                console.log('Button container clicked, ignoring');
+                return;
+            }
+            
+            // ドロップゾーン領域の空白部分がクリックされた場合のみファイル選択を開く
+            console.log('Dropzone area clicked, opening file dialog');
+            setTimeout(() => fileInput.click(), 0);
         });
         
 
+        // キャプチャーフェーズでボタンイベントを処理（より確実）
         selectFilesBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            fileInput.click();
-        });
+            e.stopImmediatePropagation();
+            console.log('Files button clicked');
+            setTimeout(() => fileInput.click(), 0);
+        }, true);
         
         selectFolderBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            folderInput.click();
-        });
+            e.stopImmediatePropagation();
+            console.log('Folder button clicked');
+            setTimeout(() => folderInput.click(), 0);
+        }, true);
         
         folderInput.addEventListener('change', this.handleFolderSelect.bind(this));
 
@@ -118,7 +142,7 @@ class ImageCompressor {
         if (files.length === 0) {
             const totalFiles = e.target.files.length;
             if (totalFiles > 0) {
-                this.showAlert(`選択された${totalFiles}個のファイルの中に画像ファイルが見つかりませんでした。対応形式: JPEG, PNG, GIF, BMP, TIFF, WebP, HEIC`, 'error');
+                this.showAlert(`選択された${totalFiles}個のファイルの中に画像ファイルが見つかりませんでした。対応形式: JPEG, PNG, GIF, BMP, TIFF, WebP`, 'error');
             } else {
                 this.showAlert('画像ファイルを選択してください。', 'error');
             }
@@ -137,7 +161,7 @@ class ImageCompressor {
         if (files.length === 0) {
             const totalFiles = e.target.files.length;
             if (totalFiles > 0) {
-                this.showAlert(`選択された${totalFiles}個のファイルの中に画像ファイルが見つかりませんでした。対応形式: JPEG, PNG, GIF, BMP, TIFF, WebP, HEIC`, 'error');
+                this.showAlert(`選択された${totalFiles}個のファイルの中に画像ファイルが見つかりませんでした。対応形式: JPEG, PNG, GIF, BMP, TIFF, WebP`, 'error');
             } else {
                 this.showAlert('フォルダ内に画像ファイルが見つかりません。', 'error');
             }
@@ -163,6 +187,7 @@ class ImageCompressor {
             return;
         }
 
+
         // ファイル数制限チェック (20ファイル)
         if (files.length > 20) {
             this.showAlert(`一度に処理できるファイル数は最大20ファイルです。`, 'error');
@@ -186,22 +211,7 @@ class ImageCompressor {
                 // 現在処理中のファイル名を表示
                 this.updateLoadingText(`${file.name} を処理中...`);
                 
-                // HEICファイルの場合は先にJPEGに変換
-                if (this.isHeicFile(file)) {
-                    try {
-                        this.updateLoadingText(`${file.name} をJPEGに変換中...`);
-                        processFile = await this.convertHeicToJpeg(file);
-                    } catch (heicError) {
-                        console.error('HEIC conversion error:', heicError);
-                        this.processedImages.push({
-                            originalFile: file,
-                            error: true,
-                            errorMessage: 'HEICファイルの変換に失敗しました。'
-                        });
-                        this.updateProgress(files.length, i + 1);
-                        continue;
-                    }
-                }
+                // processFile = file (HEICファイルの変換処理は削除)
                 
                 const result = await this.compressImage(processFile, outputFormat);
                 this.processedImages.push(result);
@@ -278,6 +288,22 @@ class ImageCompressor {
                     let quality = 0.8; // バランスの取れた品質設定
                     let extension = this.getFileExtension(file.name);
 
+                    // MIMEタイプが空の場合は拡張子から推測
+                    if (!mimeType) {
+                        if (extension.toLowerCase() === 'jpg' || extension.toLowerCase() === 'jpeg') {
+                            mimeType = 'image/jpeg';
+                        } else if (extension.toLowerCase() === 'png') {
+                            mimeType = 'image/png';
+                        } else if (extension.toLowerCase() === 'gif') {
+                            mimeType = 'image/gif';
+                        } else if (extension.toLowerCase() === 'webp') {
+                            mimeType = 'image/webp';
+                        } else {
+                            mimeType = 'image/jpeg'; // デフォルト
+                            extension = 'jpg';
+                        }
+                    }
+
                     if (outputFormat === 'webp') {
                         mimeType = 'image/webp';
                         extension = 'webp';
@@ -285,17 +311,14 @@ class ImageCompressor {
                     } else if (mimeType === 'image/jpeg' || mimeType === 'image/jpg') {
                         quality = 0.8; // JPEG適度な圧縮
                     } else if (mimeType === 'image/png') {
-                        // PNGを軽いJPEGに変換（透過なしの場合）
-                        if (!this.hasTransparency(canvas, ctx)) {
-                            mimeType = 'image/jpeg';
-                            extension = 'jpg';
-                            quality = 0.85;
-                        } else {
-                            // 透過ありの場合はWebPに変換
-                            mimeType = 'image/webp';
-                            extension = 'webp';
-                            quality = 0.9; // 透過PNG→WebPは高品質
-                        }
+                        // PNGは元の形式を維持
+                        quality = 1.0; // PNG品質（ロスレス圧縮）
+                    } else if (mimeType === 'image/gif') {
+                        // GIFも元の形式を維持
+                        quality = 1.0;
+                    } else if (mimeType === 'image/webp') {
+                        // WebPも元の形式を維持
+                        quality = 0.85;
                     }
 
                     canvas.toBlob((blob) => {
@@ -354,24 +377,6 @@ class ImageCompressor {
         return { width: Math.round(width), height: Math.round(height) };
     }
 
-    hasTransparency(canvas, ctx) {
-        try {
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const data = imageData.data;
-            
-            // アルファチャンネルをチェック（4番目の値）
-            for (let i = 3; i < data.length; i += 4) {
-                if (data[i] < 255) {
-                    return true; // 透明または半透明のピクセルが見つかった
-                }
-            }
-            return false; // 完全に不透明
-        } catch (error) {
-            // エラーが発生した場合は透過ありと仮定
-            console.warn('透過判定エラー:', error);
-            return true;
-        }
-    }
 
     generateFileName(originalName, extension) {
         const nameWithoutExt = originalName.replace(/\.[^/.]+$/, '');
@@ -561,57 +566,21 @@ class ImageCompressor {
     }
 
 
-    async loadHeic2Any() {
-        if (window.heic2any) {
-            return Promise.resolve(window.heic2any);
-        }
-
-        return new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js';
-            script.integrity = 'sha512-BL4Xt7adXF1MkW3hx5PFgQfVUaLBWgkK3qpwQ0hsAmJi0VW3kV8mY9/8kU+uj4PNk+XZoLU2C5JPE7bBOm9VFQ==';
-            script.crossOrigin = 'anonymous';
-            script.onload = () => resolve(window.heic2any);
-            script.onerror = () => reject(new Error('heic2any library could not be loaded or integrity check failed'));
-            document.head.appendChild(script);
-        });
-    }
-
-    async convertHeicToJpeg(file) {
-        try {
-            const heic2any = await this.loadHeic2Any();
-            const convertedBlob = await heic2any({
-                blob: file,
-                toType: 'image/jpeg',
-                quality: 0.95
-            });
-            
-            // Blobを配列で返す場合があるので確認
-            const resultBlob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
-            
-            // 新しいFileオブジェクトを作成
-            const newFileName = file.name.replace(/\.(heic|heif)$/i, '.jpg');
-            return new File([resultBlob], newFileName, { type: 'image/jpeg' });
-        } catch (error) {
-            console.error('HEIC conversion error:', error);
-            throw new Error('HEICファイルの変換に失敗しました');
-        }
-    }
 
     isImageFile(file) {
         // セキュリティ強化: 安全な画像形式のみ許可
         const fileName = file.name.toLowerCase();
         const safeImageExtensions = [
-            '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.tif',
-            '.webp', '.heic', '.heif'
+            '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.tif', '.webp'
             // SVG、ICOは XSS リスクのため除外
+            // HEIC、HEIFは未対応のため除外
         ];
         
         const safeMimeTypes = [
             'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 
-            'image/bmp', 'image/tiff', 'image/webp',
-            'image/heic', 'image/heif'
+            'image/bmp', 'image/tiff', 'image/webp'
             // image/svg+xml は XSS リスクのため除外
+            // image/heic, image/heif は未対応のため除外
         ];
         
         const hasValidExtension = safeImageExtensions.some(ext => fileName.endsWith(ext));
@@ -632,10 +601,20 @@ class ImageCompressor {
     }
 
     isHeicFile(file) {
-        return file.name.toLowerCase().endsWith('.heic') || 
-               file.name.toLowerCase().endsWith('.heif') ||
-               file.type === 'image/heic' ||
-               file.type === 'image/heif';
+        const fileName = file.name.toLowerCase();
+        const isHeicExtension = fileName.endsWith('.heic') || fileName.endsWith('.heif');
+        const isHeicMime = file.type === 'image/heic' || 
+                          file.type === 'image/heif' ||
+                          file.type === 'image/x-heic' ||
+                          file.type === 'image/x-heif';
+        
+        const result = isHeicExtension || isHeicMime;
+        
+        if (result) {
+            console.log(`HEIC file detected: ${file.name}, type: ${file.type}, size: ${file.size}`);
+        }
+        
+        return result;
     }
 
     // DataTransferItemsを使ったフォルダの再帰的な走査
